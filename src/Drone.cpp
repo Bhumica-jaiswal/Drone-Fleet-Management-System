@@ -9,23 +9,8 @@ void Drone::assignMission(std::shared_ptr<Mission> mission) {
 }
 
 void Drone::move() {
-    if (!currentMission_)
-        return;
-
-    Point dest = currentMission_->getDestination();
-    double dx = dest.x - position_.x;
-    double dy = dest.y - position_.y;
-    double dist = std::sqrt(dx*dx + dy*dy);
-    if (dist < 1e-6) {
-        // reached destination
-        currentMission_ = nullptr;
-        return;
-    }
-    // calculate step proportional to speed
-    double step = std::min(speed_, dist);
-    position_.x += dx / dist * step;
-    position_.y += dy / dist * step;
-    updateBattery(step * 0.1); // battery drain factor
+    // delegate actual motion to NavigationSystem
+    NavigationSystem::navigate(*this);
 }
 
 void Drone::updateBattery(double delta) {
@@ -36,6 +21,24 @@ void Drone::updateBattery(double delta) {
 
 void Drone::update() {
     move();
+}
+
+bool Drone::hasMission() const {
+    return currentMission_ != nullptr;
+}
+
+Point Drone::getMissionDestination() const {
+    if (currentMission_)
+        return currentMission_->getDestination();
+    return position_; // no mission, return current
+}
+
+void Drone::clearMission() {
+    currentMission_ = nullptr;
+}
+
+void Drone::setPosition(Point p) {
+    position_ = p;
 }
 
 std::string Drone::getStatus() const {

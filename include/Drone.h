@@ -11,6 +11,8 @@ struct Point {
 class Mission;
 
 class Drone {
+    friend class NavigationSystem; // allow navigation logic to adjust private state
+
 public:
     Drone(std::string id, Point position);
 
@@ -18,7 +20,7 @@ public:
     void assignMission(std::shared_ptr<Mission> mission);
 
     // per‑tick behavior
-    void move();                          // adjust position toward destination
+    void move();                          // adjust position toward destination (delegates)
     void updateBattery(double delta);     // drain battery based on movement/usage
     void update();                        // combined movement & battery update
 
@@ -29,6 +31,12 @@ public:
     Point getPosition() const;
     double getBatteryLevel() const;
     double getSpeed() const;
+
+    // helpers for NavigationSystem
+    bool hasMission() const;
+    Point getMissionDestination() const;
+    void clearMission();
+    void setPosition(Point p);
 
 private:
     std::string id_;
