@@ -35,8 +35,17 @@ bool FleetManager::assignMission(std::shared_ptr<Mission> mission) {
 
 void FleetManager::update() {
     for (auto &d : drones_) {
-        d->update();
+        if (d)
+            d->update();
     }
+}
+
+bool FleetManager::allDronesIdle() const {
+    for (const auto &d : drones_) {
+        if (d && d->hasMission())
+            return false;
+    }
+    return true;
 }
 
 std::vector<std::string> FleetManager::getFleetStatus() const {

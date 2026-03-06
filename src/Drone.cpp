@@ -1,4 +1,6 @@
 #include "Drone.h"
+#include "NavigationSystem.h"
+#include "Mission.h"
 #include <iostream>
 
 Drone::Drone(std::string id, Point position)

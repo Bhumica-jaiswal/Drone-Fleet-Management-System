@@ -2,6 +2,8 @@
 
 #include <string>
 #include <utility>
+#include <memory>
+#include <cmath>
 
 struct Point {
     double x;

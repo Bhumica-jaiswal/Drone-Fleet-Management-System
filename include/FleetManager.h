@@ -19,9 +19,16 @@ public:
     // simulation tick
     void update();
 
+    // query
+    bool allDronesIdle() const;
+
     // reporting
     std::vector<std::string> getFleetStatus() const;
 
 private:
     std::vector<std::shared_ptr<Drone>> drones_;
+
+public:
+    // allow external systems to inspect the raw drone list (read-only)
+    const std::vector<std::shared_ptr<Drone>>& getDrones() const { return drones_; }
 };
