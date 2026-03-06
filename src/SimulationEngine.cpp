@@ -64,6 +64,9 @@ void SimulationEngine::run() {
             std::cout << "-- collision(s) detected this step" << std::endl;
         }
 
+        // visualize the fleet on grid
+        visualizer_.displayGrid(fleet_.getDrones());
+
         // if no drone is active and no pending missions, stop early
         if (fleet_.allDronesIdle() && pendingMissions_.empty()) {
             std::cout << "All drones idle and no pending missions; ending simulation early." << std::endl;

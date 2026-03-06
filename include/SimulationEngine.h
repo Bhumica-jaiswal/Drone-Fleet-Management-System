@@ -3,7 +3,8 @@
 #include <memory>
 #include <vector>
 
-#include "FleetManager.h"  // bring in declaration of FleetManager
+#include "FleetManager.h"
+#include "GridVisualizer.h"
 
 class Drone;
 class Mission;
@@ -21,5 +22,6 @@ public:
 private:
     // internal components
     FleetManager fleet_;
+    GridVisualizer visualizer_;
     std::vector<std::shared_ptr<Mission>> pendingMissions_;
 };
