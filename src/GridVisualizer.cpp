@@ -6,6 +6,11 @@
 #include <cstdlib>
 #include <cmath>
 
+GridVisualizer::GridVisualizer() {
+    // Initialize the persistent grid ONCE with empty cells
+    trailGrid_ = std::vector<std::vector<char>>(GRID_SIZE, std::vector<char>(GRID_SIZE, '.'));
+}
+
 int GridVisualizer::worldToGrid(double coord) const {
     // round to nearest integer and clamp to grid bounds
     int gridCoord = static_cast<int>(std::round(coord));
@@ -14,24 +19,46 @@ int GridVisualizer::worldToGrid(double coord) const {
     return gridCoord;
 }
 
-void GridVisualizer::displayGrid(const std::vector<std::shared_ptr<Drone>> &drones) const {
-    // create a GRID_SIZE x GRID_SIZE grid of empty cells
-    std::vector<std::vector<char>> grid(GRID_SIZE, std::vector<char>(GRID_SIZE, '.'));
-
-    // place each drone on the grid
+void GridVisualizer::displayGrid(const std::vector<std::shared_ptr<Drone>> &drones) {
+    // Step 1: Mark previous positions with trails before updating positions
     for (const auto &drone : drones) {
         if (!drone) continue;
 
-        Point pos = drone->getPosition();
-        int gridX = worldToGrid(pos.x);
-        int gridY = worldToGrid(pos.y);
-
-        // use first letter of drone ID
-        char droneChar = drone->getId()[0];
-        grid[gridY][gridX] = droneChar;
+        std::string droneId = drone->getId();
+        
+        // Check if we have a recorded position from the last step
+        auto it = currentDronePositions_.find(droneId);
+        if (it != currentDronePositions_.end()) {
+            int prevGridX = it->second.first;
+            int prevGridY = it->second.second;
+            
+            // Mark the previous position with a trail (if it's not already a trail)
+            if (trailGrid_[prevGridY][prevGridX] != '*') {
+                trailGrid_[prevGridY][prevGridX] = '*';
+            }
+        }
     }
 
-    // print the grid with borders
+    // Step 2: Clear current drone positions and place drones at their current locations
+    for (const auto &drone : drones) {
+        if (!drone) continue;
+
+        std::string droneId = drone->getId();
+        Point pos = drone->getPosition();
+        
+        int gridX = worldToGrid(pos.x);
+        int gridY = worldToGrid(pos.y);
+        
+        char droneChar = droneId[0]; // First letter of drone ID (A, B, C)
+        
+        // Place drone at current position (overwrites any trail)
+        trailGrid_[gridY][gridX] = droneChar;
+        
+        // Record this position for the next step
+        currentDronePositions_[droneId] = std::make_pair(gridX, gridY);
+    }
+
+    // Step 3: Display the grid
     std::cout << "\n  DRONE FLEET MAP\n  ";
     for (int i = 0; i < GRID_SIZE; ++i) {
         std::cout << i;
@@ -41,7 +68,7 @@ void GridVisualizer::displayGrid(const std::vector<std::shared_ptr<Drone>> &dron
     for (int y = 0; y < GRID_SIZE; ++y) {
         std::cout << y << " ";
         for (int x = 0; x < GRID_SIZE; ++x) {
-            std::cout << grid[y][x];
+            std::cout << trailGrid_[y][x];
         }
         std::cout << " " << y << std::endl;
     }
@@ -51,4 +78,11 @@ void GridVisualizer::displayGrid(const std::vector<std::shared_ptr<Drone>> &dron
         std::cout << i;
     }
     std::cout << "\n" << std::endl;
+}
+
+void GridVisualizer::clearTrails() {
+    // Reinitialize the grid to all empty cells
+    trailGrid_ = std::vector<std::vector<char>>(GRID_SIZE, std::vector<char>(GRID_SIZE, '.'));
+    // Clear position tracking
+    currentDronePositions_.clear();
 }
